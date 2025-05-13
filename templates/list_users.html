@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>List Users</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='list_users.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="list-users-body">
+    <div class="list-users-container">
+        <h2 class="list-users-heading"><i class="fas fa-users"></i> List of Users</h2>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% else %}
+            <ul class="user-list">
+                {% for user in users %}
+                    <li><i class="fas fa-user"></i> {{ user }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+</body>
+</html>
