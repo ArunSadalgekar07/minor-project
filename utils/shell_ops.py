@@ -67,39 +67,51 @@ def list_users():
     except Exception as e:
         return False, f"Error during user listing: {str(e)}"
 
-def get_inactive_users(days=30):
+def get_inactive_users(days=7):  # Changed default to 7 days
     try:
-        # Run the `lastlog` command and filter users inactive for `days`
+        # Create the command as a shell script
+        command = f'''
+        awk -F: '$3 >= 1000 && $1 != "nobody" {{ print $1 }}' /etc/passwd | while read user; do
+            lastlog -u "$user" | tail -n 1 | awk -v u="$user" -v days={days} '
+            {{
+                if ($0 ~ /Never logged in/) {{
+                    print u ": Never logged in"
+                }} else {{
+                    login = $4 " " $5 " " $6 " " $7
+                    cmd = "date -d \"" login "\" +%s"
+                    cmd | getline login_time
+                    close(cmd)
+                    now = systime()
+                    if ((now - login_time) > (days * 86400)) {{
+                        print u ": Last login over " days " days ago (" login ")"
+                    }}
+                }}
+            }}'
+        done
+        '''
+        
+        # Run the command
         result = subprocess.run(
-            ["lastlog", "--time", str(days)],
+            ['bash', '-c', command],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
+
         if result.returncode != 0:
             return False, result.stderr.strip()
 
-        # Parse the output and extract inactive users
-        lines = result.stdout.splitlines()
+        # Process the output
         inactive_users = []
-        for line in lines[1:]:
-            parts = line.split()
-            if len(parts) > 0:
-                username = parts[0]
-                # Check if the user is a human user (UID >= 1000)
-                user_info = subprocess.run(
-                    ["id", "-u", username],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True
-                )
-                if user_info.returncode == 0:
-                    uid = int(user_info.stdout.strip())
-                    if uid >= 1000:
-                        if "Never logged in" in line or "No login" in line:
-                            inactive_users.append(username)
+        for line in result.stdout.strip().split('\n'):
+            if line:  # Skip empty lines
+                # Extract just the username from the detailed output
+                username = line.split(':')[0].strip()
+                if username:
+                    inactive_users.append(line)  # Store the full message instead of just username
 
         return True, inactive_users
+
     except Exception as e:
         return False, f"Error fetching inactive users: {str(e)}"
 

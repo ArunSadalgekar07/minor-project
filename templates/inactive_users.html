@@ -14,8 +14,10 @@
             <p class="error-message">{{ error }}</p>
         {% elif users %}
             <ul class="inactive-users-list">
-                {% for user in users %}
-                    <li class="inactive-user"><i class="fas fa-user-slash"></i> {{ user }}</li>
+                {% for user_info in users %}
+                    <li class="inactive-user">
+                        <i class="fas fa-user-slash"></i> {{ user_info }}
+                    </li>
                 {% endfor %}
             </ul>
         {% else %}
