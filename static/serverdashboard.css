@@ -451,3 +451,21 @@
     font-size: 1.3rem;
     color: var(--primary-color, #4a90e2);
 }
+
+/* Spinner styles */
+.loading-spinner {
+    display: none;
+    margin: 2rem auto;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid var(--primary-color, #6c5ce7);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    z-index: 1000;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+}

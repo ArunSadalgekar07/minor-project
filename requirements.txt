@@ -1,2 +1,4 @@
 Flask
 pexpect
+pandas
+psutil

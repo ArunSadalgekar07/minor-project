@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
+
 <body class="server-dashboard-body">
     <nav class="dashboard-nav">
         <div class="nav-title">
@@ -29,6 +31,9 @@
         <div class="dashboard-header">
             <h1 class="dashboard-title">CSV Analysis Dashboard</h1>
         </div>
+
+        <!-- <div id="csvLoadingSpinner" class="loading-spinner"></div>
+          -->
 
         <div class="upload-section">
             <form id="uploadForm" enctype="multipart/form-data">
@@ -62,23 +67,48 @@
     </div>
 
     <script>
+        // Show spinner before analysis
+        
+        // document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+        //     e.preventDefault();
+        //     document.getElementById('csvLoadingSpinner').style.display = 'block'; // Show spinner
+        //     const formData = new FormData(this);
+        //     try {
+        //         const response = await fetch('/api/analyze_csv', {
+        //             method: 'POST',
+        //             body: formData
+        //         });
+        //         document.getElementById('csvLoadingSpinner').style.display = 'none'; // Hide spinner
+        //         if (response.ok) {
+        //             const data = await response.json();
+        //             displayAnalysisResults(data);
+        //         } else {
+        //             alert('Error analyzing CSV file');
+        //         }
+        //     } catch (error) {
+        //         document.getElementById('csvLoadingSpinner').style.display = 'none'; // Hide spinner
+        //         console.error('Error:', error);
+        //         alert('Error analyzing CSV file');
+        //     }
+        // });
+
         // File input handling
-        document.getElementById('csvFile').addEventListener('change', function(e) {
+        document.getElementById('csvFile').addEventListener('change', function (e) {
             const fileName = e.target.files[0]?.name || 'No file chosen';
             document.getElementById('fileName').textContent = fileName;
         });
 
         // Form submission handling
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             const formData = new FormData(this);
-            
+
             try {
                 const response = await fetch('/api/analyze_csv', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     displayAnalysisResults(data);
@@ -124,7 +154,7 @@
 
         function initializeCharts(gpuIndex, data) {
             const charts = {};
-            
+
             // Common chart options
             const commonOptions = {
                 responsive: true,
@@ -184,7 +214,7 @@
                     }
                 }
             };
-            
+
             // GPU Utilization Chart
             charts.utilization = new Chart(document.getElementById(`gpuUtilizationChart${gpuIndex}`).getContext('2d'), {
                 type: 'line',
@@ -270,7 +300,7 @@
                                 font: {
                                     size: 11
                                 },
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value.toLocaleString() + ' MiB';
                                 }
                             }
@@ -285,7 +315,7 @@
         function displayAnalysisResults(data) {
             const container = document.getElementById('gpuStatsContainer');
             container.innerHTML = '';
-            
+
             // Create cards and charts for each GPU
             data.forEach(gpuData => {
                 container.insertAdjacentHTML('beforeend', createGpuCards(gpuData.index, gpuData.name));
@@ -296,7 +326,7 @@
         }
 
         // Download charts functionality
-        document.getElementById('downloadCharts').addEventListener('click', function() {
+        document.getElementById('downloadCharts').addEventListener('click', function () {
             const charts = document.querySelectorAll('canvas');
             charts.forEach((canvas, index) => {
                 // Create a temporary canvas with white background
@@ -310,11 +340,12 @@
                 // Draw the chart on top
                 ctx.drawImage(canvas, 0, 0);
                 // Save as PNG
-                tmpCanvas.toBlob(function(blob) {
+                tmpCanvas.toBlob(function (blob) {
                     saveAs(blob, `gpu_chart_${index + 1}.png`);
                 });
             });
         });
     </script>
 </body>
-</html> 
+
+</html>
