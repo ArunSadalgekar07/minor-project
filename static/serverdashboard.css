@@ -437,3 +437,17 @@
         justify-content: center;
     }
 }
+
+.cpu-info-section {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    max-width: 700px;
+}
+.cpu-info-section h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: var(--primary-color, #4a90e2);
+}

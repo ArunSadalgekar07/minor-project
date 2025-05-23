@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from utils.shell_ops import create_user, delete_user, list_users, get_inactive_users, get_gpu_stats  # Import get_inactive_users
+from utils.shell_ops import create_user, delete_user, list_users, get_inactive_users, get_gpu_stats, get_cpu_live_info  # Import get_inactive_users
 import pandas as pd
 from io import StringIO
 from datetime import datetime
@@ -208,6 +208,14 @@ def analyze_csv():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cpu_live_info')
+def cpu_live_info():
+    success, data = get_cpu_live_info()
+    if success:
+        return jsonify(data)
+    else:
+        return jsonify({'error': data}), 500
 
 # Logout
 @app.route('/logout')

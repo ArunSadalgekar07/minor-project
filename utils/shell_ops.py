@@ -146,3 +146,43 @@ def get_gpu_stats():
     except Exception as e:
         return False, f"Error fetching GPU stats: {str(e)}"
 
+def get_cpu_live_info():
+    import platform
+    import os
+    import subprocess
+    try:
+        if platform.system() != 'Linux':
+            return False, 'Live CPU info only supported on Linux.'
+        # Get CPU usage percentage (average over all cores)
+        cpu_percent = None
+        try:
+            import psutil
+            cpu_percent = psutil.cpu_percent(interval=0.5)
+            per_core = psutil.cpu_percent(interval=0.5, percpu=True)
+            load_avg = os.getloadavg() if hasattr(os, 'getloadavg') else (None, None, None)
+        except ImportError:
+            # Fallback to top command
+            top_out = subprocess.check_output(["top", "-bn1"]).decode()
+            for line in top_out.split("\n"):
+                if "Cpu(s):" in line:
+                    cpu_percent = float(line.split("%id,")[0].split()[-1])
+                    cpu_percent = 100 - cpu_percent  # idle to usage
+                    per_core = []
+                    break
+            load_avg = os.getloadavg() if hasattr(os, 'getloadavg') else (None, None, None)
+        # Get CPU info
+        cpu_info = subprocess.check_output(["lscpu"]).decode()
+        model_name = None
+        for line in cpu_info.split("\n"):
+            if "Model name:" in line:
+                model_name = line.split(":", 1)[1].strip()
+                break
+        return True, {
+            'cpu_percent': cpu_percent,
+            'per_core': per_core,
+            'load_avg': load_avg,
+            'model_name': model_name
+        }
+    except Exception as e:
+        return False, str(e)
+
