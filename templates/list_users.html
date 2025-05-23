@@ -18,8 +18,30 @@
                     <li><i class="fas fa-user"></i> {{ user }}</li>
                 {% endfor %}
             </ul>
+            <button id="downloadInactiveUsers" class="btn btn-primary" style="margin-top: 20px;">
+                <i class="fas fa-download"></i> Download Inactive Users
+            </button>
         {% endif %}
         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const downloadBtn = document.getElementById('downloadInactiveUsers');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                const users = Array.from(document.querySelectorAll('.user-list li')).map(li => li.textContent.trim());
+                const blob = new Blob([users.join('\n')], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'inactive_users.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+    });
+    </script>
 </body>
 </html>
