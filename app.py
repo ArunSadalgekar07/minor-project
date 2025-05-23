@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from utils.shell_ops import create_user, delete_user, list_users, get_inactive_users, get_gpu_stats, get_cpu_live_info  # Import get_inactive_users
+from utils.shell_ops import create_user, delete_user, list_users, get_inactive_users, get_gpu_stats, get_cpu_live_info, get_user_cpu_usage, get_user_gpu_usage  # Add new imports
 import pandas as pd
 from io import StringIO
 from datetime import datetime
@@ -101,49 +101,7 @@ def display():
 def server_dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    
-    # Example stats data (replace this with actual data from your backend logic)
-    stats = {
-        "system": {
-            "platform": "Linux",
-            "platform_release": "5.15.0-70-generic",
-            "platform_version": "#77-Ubuntu SMP",
-            "architecture": "x86_64",
-            "hostname": "server-host",
-            "processor": "Intel(R) Xeon(R) CPU",
-            "uptime": "2 days, 4:32:10"
-        },
-        "cpu": {
-            "physical_cores": 4,
-            "total_cores": 8,
-            "total_usage": 45.3,
-            "usage_per_core": [40.5, 50.2, 42.1, 48.3, 43.7, 47.8, 44.9, 46.5]
-        },
-        "memory": {
-            "total": "16 GB",
-            "available": "8 GB",
-            "used": "8 GB",
-            "percentage": "50%"
-        },
-        "disk": [
-            {
-                "mountpoint": "/",
-                "device": "/dev/sda1",
-                "filesystem_type": "ext4",
-                "total_size": "500 GB",
-                "used": "200 GB",
-                "percentage": "40%",
-                "free": "300 GB"
-            }
-        ],
-        "network": {
-            "total_bytes_sent": "1.2 GB",
-            "total_bytes_received": "3.4 GB"
-        }
-    }
-
-    # Pass the stats variable to the template
-    return render_template('serverdashboard.html', stats=stats)
+    return render_template('serverdashboard.html')
 
 # Add a new route for inactive users
 @app.route('/inactive_users')
@@ -216,6 +174,34 @@ def cpu_live_info():
         return jsonify(data)
     else:
         return jsonify({'error': data}), 500
+
+@app.route('/api/user_cpu_usage')
+def user_cpu_usage():
+    if not session.get('logged_in'):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    success, data = get_user_cpu_usage()
+    if success:
+        return jsonify(data)
+    else:
+        return jsonify({"error": data}), 500
+
+@app.route('/api/user_gpu_usage')
+def user_gpu_usage():
+    if not session.get('logged_in'):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    success, data = get_user_gpu_usage()
+    if success:
+        return jsonify(data)
+    else:
+        return jsonify({"error": data}), 500
+
+@app.route('/user_utilization')
+def user_utilization():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    return render_template('user_utilization.html')
 
 # Logout
 @app.route('/logout')

@@ -186,3 +186,68 @@ def get_cpu_live_info():
     except Exception as e:
         return False, str(e)
 
+def get_user_cpu_usage():
+    try:
+        # Run the command to get CPU usage by user
+        command = "ps -eo user,%cpu,uid --sort=-%cpu | awk 'NR>1 && $3>=1000 {cpu[$1]+=$2} END {for (u in cpu) print u, cpu[u]}' | sort -k2 -nr"
+        result = subprocess.run(
+            ['bash', '-c', command],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            return False, result.stderr.strip()
+
+        # Parse the output
+        user_cpu_usage = []
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                username, cpu_percent = line.split()
+                user_cpu_usage.append({
+                    'username': username,
+                    'cpu_percent': float(cpu_percent)
+                })
+
+        return True, user_cpu_usage
+    except Exception as e:
+        return False, f"Error fetching user CPU usage: {str(e)}"
+
+def get_user_gpu_usage():
+    try:
+        # Run the command to get GPU usage by user
+        command = '''
+        nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader,nounits | while read -r pid pname mem; do
+            uid=$(stat -c %u /proc/$pid 2>/dev/null)
+            if [ "$uid" -ge 1000 ]; then
+                user=$(ps -o user= -p $pid)
+                echo "$user $mem"
+            fi
+        done | awk '{mem[$1]+=$2} END {for (u in mem) print u, mem[u]}' | sort -k2 -nr
+        '''
+        
+        result = subprocess.run(
+            ['bash', '-c', command],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            return False, result.stderr.strip()
+
+        # Parse the output
+        user_gpu_usage = []
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                username, gpu_memory = line.split()
+                user_gpu_usage.append({
+                    'username': username,
+                    'gpu_memory_mib': float(gpu_memory)
+                })
+
+        return True, user_gpu_usage
+    except Exception as e:
+        return False, f"Error fetching user GPU usage: {str(e)}"
+
