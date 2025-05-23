@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from utils.shell_ops import create_user, delete_user, list_users, get_inactive_users, get_gpu_stats  # Import get_inactive_users
+import pandas as pd
+from io import StringIO
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'  # Required for session
@@ -164,6 +167,47 @@ def gpu_stats():
         return jsonify(gpu_data)
     else:
         return jsonify({"error": gpu_data}), 500
+
+@app.route('/csv_analysis')
+def csv_analysis():
+    return render_template('csv_analysis.html')
+
+@app.route('/api/analyze_csv', methods=['POST'])
+def analyze_csv():
+    if 'csvFile' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['csvFile']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not file.filename.endswith('.csv'):
+        return jsonify({'error': 'File must be a CSV'}), 400
+
+    try:
+        # Read CSV file
+        df = pd.read_csv(file)
+        
+        # Group data by GPU Index
+        gpu_data = []
+        for gpu_index in df['GPU Index'].unique():
+            gpu_df = df[df['GPU Index'] == gpu_index]
+            # Filter: utilization >= 1% or memory >= 100 MiB
+            filtered_gpu_df = gpu_df[(gpu_df['Utilization %'] >= 1) | (gpu_df['Memory Used (MiB)'] >= 100)]
+            if filtered_gpu_df.empty:
+                continue
+            gpu_data.append({
+                'index': int(gpu_index),
+                'name': filtered_gpu_df['GPU Name'].iloc[0],
+                'timestamps': filtered_gpu_df['Timestamp'].tolist(),
+                'utilization': filtered_gpu_df['Utilization %'].tolist(),
+                'memory': filtered_gpu_df['Memory Used (MiB)'].tolist()
+            })
+        
+        return jsonify(gpu_data)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Logout
 @app.route('/logout')
