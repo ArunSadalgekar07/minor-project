@@ -146,26 +146,42 @@ def analyze_csv():
         # Read CSV file
         df = pd.read_csv(file)
         
+        # Check required columns
+        required_columns = ['GPU Index', 'GPU Name', 'Timestamp', 'Utilization %', 'Memory Used (MiB)']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            return jsonify({'error': f'Missing required columns: {", ".join(missing_columns)}'}), 400
+        
         # Group data by GPU Index
         gpu_data = []
         for gpu_index in df['GPU Index'].unique():
-            gpu_df = df[df['GPU Index'] == gpu_index]
-            # Filter: utilization >= 1% or memory >= 100 MiB
-            filtered_gpu_df = gpu_df[(gpu_df['Utilization %'] >= 1) | (gpu_df['Memory Used (MiB)'] >= 100)]
-            if filtered_gpu_df.empty:
-                continue
-            gpu_data.append({
-                'index': int(gpu_index),
-                'name': filtered_gpu_df['GPU Name'].iloc[0],
-                'timestamps': filtered_gpu_df['Timestamp'].tolist(),
-                'utilization': filtered_gpu_df['Utilization %'].tolist(),
-                'memory': filtered_gpu_df['Memory Used (MiB)'].tolist()
-            })
+            try:
+                gpu_df = df[df['GPU Index'] == gpu_index]
+                # Filter: utilization >= 1% or memory >= 100 MiB
+                filtered_gpu_df = gpu_df[(gpu_df['Utilization %'] >= 1) | (gpu_df['Memory Used (MiB)'] >= 100)]
+                if filtered_gpu_df.empty:
+                    continue
+                gpu_data.append({
+                    'index': int(gpu_index),
+                    'name': filtered_gpu_df['GPU Name'].iloc[0],
+                    'timestamps': filtered_gpu_df['Timestamp'].tolist(),
+                    'utilization': filtered_gpu_df['Utilization %'].tolist(),
+                    'memory': filtered_gpu_df['Memory Used (MiB)'].tolist()
+                })
+            except Exception as e:
+                return jsonify({'error': f'Error processing GPU {gpu_index}: {str(e)}'}), 500
         
+        if not gpu_data:
+            return jsonify({'error': 'No valid GPU data found in the CSV file'}), 400
+            
         return jsonify(gpu_data)
     
+    except pd.errors.EmptyDataError:
+        return jsonify({'error': 'The CSV file is empty'}), 400
+    except pd.errors.ParserError:
+        return jsonify({'error': 'Error parsing CSV file. Please check the file format'}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Error processing CSV file: {str(e)}'}), 500
 
 @app.route('/api/cpu_live_info')
 def cpu_live_info():
