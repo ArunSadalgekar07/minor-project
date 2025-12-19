@@ -17,6 +17,19 @@ A Flask-based web dashboard for monitoring GPU and CPU stats across multiple dep
 
 ---
 
+## Screenshots
+![IMG-20251219-WA0035 1](https://github.com/user-attachments/assets/2acd16a7-7d3e-4bb0-9302-189d814229a8)
+![IMG-20251219-WA0046 1](https://github.com/user-attachments/assets/6cfa3780-2af1-446b-b17c-7123fea4eb0a)
+![IMG-20251219-WA0044 1](https://github.com/user-attachments/assets/53493072-bf0a-4a91-9a50-5aa579d3a2ab)
+![IMG-20251219-WA0042 1](https://github.com/user-attachments/assets/eb04cc3b-1b37-403d-8881-ecf2696d84ae)
+![IMG-20251219-WA0045 1](https://github.com/user-attachments/assets/04367d10-70d7-4e26-847c-c60ebf830c83)
+![IMG-20251219-WA0049 1](https://github.com/user-attachments/assets/349a0ac3-3e6b-45c6-ae1d-0c3a2ad340f4)
+![IMG-20251219-WA0043 1](https://github.com/user-attachments/assets/4fbbe908-02c8-4ed9-a512-c450b652e2f0)
+![IMG-20251219-WA0050 1](https://github.com/user-attachments/assets/dd1d3a61-f932-4586-b9ce-1a3a9a186271)
+![IMG-20251219-WA0052 1](https://github.com/user-attachments/assets/f178056a-34d7-4f73-a3fe-e453a1701cdd)
+![IMG-20251219-WA0053 1](https://github.com/user-attachments/assets/4c6cd68d-dcf5-4f48-88cd-e9ac460159c8)
+
+
 ## 🛠️ Setup Instructions
 
 ### 1. **Clone the Repository**
